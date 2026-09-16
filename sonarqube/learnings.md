@@ -646,6 +646,25 @@ rows for the rules you commit to fixing this run.
   about the *typical* site; look for the cheapest token (level, visibility, annotation, message
   shape) that partitions the pool, exactly as the visibility split does for signature rules.
   See [rules/java-S2629.md](rules/java-S2629.md).
+  **And when a split pays, test it a SECOND time — review narrowed this one too, on the same PR.**
+  *"`warn` is always enabled"* answers *would a guard save anything?* and NOT *is this call written
+  the way XWiki wants?*, and the two come apart on one shape: an argument built by **string
+  concatenation**, which the logging best practices forbid outright. Nine of ten platform sites were
+  already parameterized (the rule objected to the argument *expression*, so suppression is right);
+  the tenth was `warn("[DEPRECATED] " + message)`, where the rule is pointing at a real convention
+  violation and suppressing it blesses the smell. Vincent: *"Looks like the fix is wrong here."* It
+  shipped instead as `warn("[DEPRECATED] {}", message)` with the annotation **deleted** — a real fix
+  is strictly better than a defensible suppression, and the second classifier (*does the argument
+  list contain a `+`?*) is as free as the first. Generalise: **after a cheap classifier rescues a
+  denylisted rule, ask what its subset is still hiding** — the first split answers the rule's stated
+  premise, a second one usually decides whether the code is actually idiomatic.
+  Two mechanics from that fix, both cheap to get wrong: **SLF4J's placeholder is `{}`, never `%s`**
+  (it does no printf formatting, so the suggested-in-review `%s` form would have logged the literal
+  and dropped the argument — confirm the logger's type first), and the change moves
+  `ILoggingEvent#getMessage()` from the flattened string to the **pattern**, so a test asserting the
+  flattened form needs `getFormattedMessage()`. Rendered output is byte-identical, so the functional
+  ITs' `registerExpected("…")` console matchers are unaffected — but grep for them before changing
+  any log message, since they match text.
   **The mirror-image drop condition is the same truthfulness gate as `S1186`, and it lives one level
   UP.** An idiom-denylist entry is a claim about a *class of code*, not about every site the rule
   flags, so the per-site test is whether the owner really is what the entry describes: `AbstractJob`'s
