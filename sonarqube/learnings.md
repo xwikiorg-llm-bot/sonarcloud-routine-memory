@@ -1352,6 +1352,14 @@ lowers a JaCoCo ratio, how to tell your reactor failure from a pre-existing one 
   the batch had dropped (`DefaultDocumentAccessBridge:632`), and reading the interface confirmed the
   drop was right — `getAttachmentContent(AttachmentReference)` is not deprecated there, so there was
   nothing to copy. Check the drop before treating it as spare yield.
+  **OUTCOME, nine days later: the diagnosis held exactly.** The branch was rebased onto current
+  master by the maintainer (identical content — same 16 files, `+164/-0`, one commit), that push
+  fired the `synchronize` trigger, and `Quality / Analyze` came back **green** on the new head with
+  the two `javabugs:S2259` still reported and still `isNew=False`. So the whole episode cost nothing
+  but latency, and the recorded end state ("one comment, keep watching, do not manufacture a commit")
+  was right: the re-trigger arrived on its own the moment anyone touched the branch. Worth one short
+  follow-up comment when it lands — a reviewer arriving at a PR whose only red is the app's project
+  gate needs to be told the repo's own gate passed.
   **The sibling PRs are the control, and here they settle it: commons #1955 and rendering #430 of the
   same sweep both merged while platform sat red on the crash** — same rule, same transform, same day.
   Two green-and-merged siblings are the cheapest evidence that a red third is the run and not the
